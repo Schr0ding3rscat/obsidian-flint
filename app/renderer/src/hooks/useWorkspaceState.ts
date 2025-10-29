@@ -125,10 +125,18 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
       setWorkspace((current) => {
         const next = normalize(state);
         if (isWorkspaceEqual(current, next)) {
+          if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+          }
           lastPersisted.current = current;
           return current;
         }
 
+        if (saveTimer.current) {
+          clearTimeout(saveTimer.current);
+          saveTimer.current = null;
+        }
         lastPersisted.current = next;
         return next;
       });
@@ -162,6 +170,9 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
         })
         .catch((error) => {
           console.warn("Failed to persist workspace state", error);
+        })
+        .finally(() => {
+          saveTimer.current = null;
         });
     }, SAVE_DEBOUNCE_MS);
 
