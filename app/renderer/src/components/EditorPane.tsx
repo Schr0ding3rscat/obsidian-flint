@@ -3,8 +3,7 @@ import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { defaultKeymap } from "@codemirror/commands";
-import { history, historyKeymap } from "@codemirror/history";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 
 interface EditorPaneProps {
   value: string;

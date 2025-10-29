@@ -149,7 +149,8 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
     }
 
     const api = window.workspaceAPI;
-    if (!api?.saveState) {
+    const saveState = api?.saveState;
+    if (!saveState) {
       return;
     }
 
@@ -163,8 +164,7 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
     }
 
     saveTimer.current = setTimeout(() => {
-      api
-        .saveState(workspace)
+      saveState(workspace)
         .then(() => {
           lastPersisted.current = workspace;
         })
