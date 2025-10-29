@@ -76,6 +76,7 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
   const [workspace, setWorkspace] = useState<WorkspaceState>(DEFAULT_WORKSPACE_STATE);
   const [hydrated, setHydrated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastPersisted = useRef<WorkspaceState | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,7 +91,9 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
         }
         const stored = await api.loadState();
         if (!cancelled) {
-          setWorkspace(normalize(stored));
+          const normalized = normalize(stored);
+          setWorkspace(normalized);
+          lastPersisted.current = normalized;
           setHydrated(true);
         }
       } catch (error) {
@@ -120,8 +123,14 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
 
     return api.onStateUpdated((state) => {
       setWorkspace((current) => {
-        const next = normalize({ ...current, ...state });
-        return isWorkspaceEqual(current, next) ? current : next;
+        const next = normalize(state);
+        if (isWorkspaceEqual(current, next)) {
+          lastPersisted.current = current;
+          return current;
+        }
+
+        lastPersisted.current = next;
+        return next;
       });
     });
   }, []);
@@ -138,17 +147,28 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
 
     if (saveTimer.current) {
       clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+
+    if (lastPersisted.current && isWorkspaceEqual(workspace, lastPersisted.current)) {
+      return;
     }
 
     saveTimer.current = setTimeout(() => {
-      api.saveState(workspace).catch((error) => {
-        console.warn("Failed to persist workspace state", error);
-      });
+      api
+        .saveState(workspace)
+        .then(() => {
+          lastPersisted.current = workspace;
+        })
+        .catch((error) => {
+          console.warn("Failed to persist workspace state", error);
+        });
     }, SAVE_DEBOUNCE_MS);
 
     return () => {
       if (saveTimer.current) {
         clearTimeout(saveTimer.current);
+        saveTimer.current = null;
       }
     };
   }, [workspace, hydrated]);
