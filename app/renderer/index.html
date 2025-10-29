@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Obsidian Flint</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="theme-dark">
+    <div id="root">
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <button id="select-vault" class="primary">Switch Vault</button>
+        </div>
+        <div class="sidebar-section">
+          <input id="search" type="search" placeholder="Search notes" />
+          <ul id="search-results" class="search-results"></ul>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-header">
+            <span>Notes</span>
+            <button id="new-note" title="Create note">+</button>
+          </div>
+          <ul id="note-list" class="note-list"></ul>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-header">
+            <span>Tags</span>
+          </div>
+          <ul id="tag-list" class="tag-list"></ul>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-header">
+            <span>Commands</span>
+            <button id="reload-plugins" title="Reload plugins">⟳</button>
+          </div>
+          <ul id="command-list" class="command-list"></ul>
+        </div>
+      </aside>
+      <main class="workspace">
+        <header class="workspace-header">
+          <input id="note-title" type="text" placeholder="Note title" />
+          <div class="header-actions">
+            <button id="save-note" class="primary">Save</button>
+            <button id="delete-note">Delete</button>
+            <button id="rename-note">Rename</button>
+            <button id="toggle-preview">Preview</button>
+            <button id="open-graph">Graph</button>
+          </div>
+        </header>
+        <section class="workspace-body">
+          <textarea id="editor" spellcheck="false"></textarea>
+          <article id="preview" class="markdown-preview hidden"></article>
+          <section id="graph-view" class="graph-view hidden">
+            <canvas id="graph-canvas" width="800" height="600"></canvas>
+          </section>
+        </section>
+        <footer class="status-bar">
+          <span id="status-message">Ready.</span>
+        </footer>
+      </main>
+    </div>
+    <script src="markdown.js"></script>
+    <script src="graph.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

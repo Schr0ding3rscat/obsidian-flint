@@ -1,9 +1,37 @@
 {
-  "name": "obsidian-community-releases",
+  "name": "obsidian-flint",
+  "version": "1.0.0",
+  "description": "A fully local, Obsidian-inspired knowledge base desktop application.",
+  "main": "app/main.js",
   "scripts": {
-    "format": "prettier --write \"**/community*.json\""
+    "start": "electron .",
+    "dev": "electron .",
+    "package:win": "electron-builder --win --x64",
+    "format": "prettier --write \"**/*.{js,css,json,html}\""
   },
+  "build": {
+    "appId": "com.obsidian.flint",
+    "productName": "Obsidian Flint",
+    "directories": {
+      "buildResources": "resources",
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
   "devDependencies": {
+    "electron": "32.2.7",
+    "electron-builder": "24.13.3",
     "prettier": "3.5.3"
   }
 }

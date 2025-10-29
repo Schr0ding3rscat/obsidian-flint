@@ -1,63 +1,128 @@
-## About this repo
+# Obsidian Flint
 
-This repo is used for hosting public releases of Obsidian, as well as our community plugins & themes directories.
+Obsidian Flint is a fully local, Obsidian-inspired knowledge management desktop application. It mirrors the core workflows of Obsidian—vault-based Markdown note taking, backlinks, tags, graph visualization, and a lightweight plugin runtime—while ensuring that every action runs on the user’s machine. No remote services are required.
 
-Obsidian is not open source software and this repo _DOES NOT_ contain the source code of Obsidian. However, if you wish to contribute to Obsidian, you can easily do so with our extensive plugin system. A plugin guide can be found here: https://docs.obsidian.md
+## Features
 
-This repo does not accept issues, if you have questions or issues with plugins, please go to their own repo to file them. If you have questions or issues about core Obsidian itself, please post them to our community: https://obsidian.md/community
+- **Vault-based storage** – Notes, attachments, snippets, themes, and plugins live in a user-selectable vault folder on disk.
+- **Local Markdown editor** – Rich editor with live preview, tagging, wiki-linking, and syntax-aware rendering implemented without remote assets.
+- **Backlinks and tags** – Automatic metadata extraction for tags (`#tag`) and wiki links (`[[Note]]`) keeps contextual navigation local.
+- **Graph view** – Canvas-based visualization of note relationships derived from the vault metadata.
+- **Command palette and plugins** – Deterministic plugin sandbox that loads JavaScript plugins from the vault and exposes command registration APIs.
+- **Theme awareness** – Follows the OS dark/light preference and updates the renderer without remote assets.
 
-## Submit your plugin or theme
+## Getting started
 
-When opening a pull request, please switch to preview mode and select the option to go through our submission checklist. Submit your entry by following the convention in the JSON file and we will review your submission.
+### Prerequisites
 
-Thanks for submitting your creations!
+- [Node.js](https://nodejs.org/) 18 or newer
+- npm 9 or newer (bundled with Node.js)
 
-You can find a detailed explanation for submitting your [plugin here](https://docs.obsidian.md/Plugins/Releasing/Submit+your+plugin) and your [theme here](https://docs.obsidian.md/Themes/App+themes/Submit+your+theme).
+### Install dependencies
 
-## Policies
+```bash
+npm install
+```
 
-All submissions must conform with our [developer policies](https://docs.obsidian.md/Developer+policies)
+### Run the desktop app
 
-## Community Theme
+```bash
+npm start
+```
 
-To add your theme to our theme store, make a pull request to the `community-css-theme.json` file. Please add your theme to the end of the list.
+The first launch creates a default vault at `~/Documents/ObsidianFlintVault`. You can switch to an existing folder at any time using **Switch Vault** in the sidebar.
 
-- `name`: a unique name for your theme. Must not collide with other themes.
-- `author`: the author's name for display.
-- `repo`: the GitHub repository identifier, in the form of `user-name/repo-name`, if your GitHub repo is located at `https://github.com/user-name/repo-name`.
-- `screenshot`: path to the screenshot of your theme.
-- `modes`: if your theme supports both dark and light mode, put `["dark", "light"]`. Otherwise, put `["dark"]` if your theme only supports dark mode, or  `["light"]` if your theme only supports light mode.
-- `publish`: if your theme supports Obsidian Publish, set this to `true`. Omit it otherwise.
+### Package a Windows installer
 
-To get your theme compatible with Obsidian Publish, you can use `applyCss` and `applyCssByLink` to test out your CSS in the developer console of Obsidian Publish sites, so that you don't actually need to own sites to test your `publish.css`. You can test it out on our help site here: https://help.obsidian.md/
+```bash
+npm run package:win
+```
 
-`applyCss` takes a CSS string, you can use backtick (template strings) for multiline CSS. `applyCssByLink` takes a link and loads the CSS, would recommend GitHub raw file URLs.
+The installer will be generated in the `dist/` directory. Packaging runs fully offline and bundles all local assets.
 
-## Community Plugin
+## Project structure
 
-### Community Plugins format
+```
+app/
+  main.js          # Electron main process and IPC handlers
+  preload.js       # Secure bridge exposing allowed APIs to the renderer
+  plugin-host.js   # Local plugin sandbox and command registry
+  renderer/
+    index.html     # Renderer shell with sidebar, editor, preview, and graph view
+    app.js         # UI logic for notes, tags, search, and plugin execution
+    markdown.js    # Offline Markdown renderer with wiki link + tag styling
+    graph.js       # Canvas-based knowledge graph renderer
+    styles.css     # Obsidian-inspired theming with dark/light support
+```
 
-To add your plugin to the list, make a pull request to the `community-plugins.json` file. Please add your plugin to the end of the list.
+All persistent data resides inside the selected vault directory. The default layout is:
 
-- `id`: A unique ID for your plugin. Make sure this is the same one you have in your `manifest.json`.
-- `name`: The name of your plugin.
-- `author`: The author's name.
-- `description`: A short description of what your plugin does.
-- `repo`: The GitHub repository identifier, in the form of `user-name/repo-name`, if your GitHub repo is located at `https://github.com/user-name/repo-name`.
+```
+<vault>/
+  notes/          # Markdown notes (.md)
+  attachments/    # Binary assets linked from notes
+  snippets/       # CSS snippets applied locally (future use)
+  themes/         # Custom theme overrides (future use)
+  plugins/        # JavaScript plugins with manifest.json + main.js
+```
 
-### How community plugins are pulled
+## Plugin development
 
-- Obsidian will read the list of plugins in `community-plugins.json`.
-- The `name`, `author` and `description` fields are used for searching.
-- When the user opens the detail page of your plugin, Obsidian will pull the `manifest.json` and `README.md` from your GitHub repo).
-- The `manifest.json` in your repo will only be used to figure out the latest version. Actual files are fetched from your GitHub releases.
-- If your `manifest.json` requires a version of Obsidian that's higher than the running app, your `versions.json` will be consulted to find the latest version of your plugin that is compatible.
-- When the user chooses to install your plugin, Obsidian will look for your GitHub releases tagged identically to the version inside `manifest.json`.
-- Obsidian will download `manifest.json`, `main.js`, and `styles.css` (if available), and store them in the proper location inside the vault.
+Plugins are plain JavaScript modules placed under `<vault>/plugins/<plugin-id>/`. Each plugin must provide a `manifest.json` and a `main.js` file.
 
-### Announcing the First Public Release of your Plugin/Theme
+`manifest.json` example:
 
-- Once admitted to the plugin/theme browser, you can announce the public availability of your plugin/theme:
-  - [in the forums](https://forum.obsidian.md/c/share-showcase/9) as a showcase, and
-  - [on the Discord Server](https://discord.gg/veuWUTm) in the channel `#updates`. (You need the `developer` role to be able to post in that channel; [you can get that role here](https://discord.com/channels/686053708261228577/702717892533157999/830492034807758859).)
-- You can also announce the first working version of your plugin as a public beta before "officially" submitting it to the plugin/theme browser. That way, you can acquire some beta testers for feedback. It's recommended to use the [BRAT Plugin](https://obsidian.md/plugins?id=obsidian42-brat) to make the installation as easy as possible for interested beta testers.
+```json
+{
+  "id": "daily-note",
+  "name": "Daily Note Commands",
+  "version": "1.0.0"
+}
+```
+
+`main.js` example:
+
+```js
+exports.onload = function () {
+  app.registerCommand({
+    id: 'create-daily',
+    name: 'Create Daily Note',
+    callback() {
+      const today = new Date().toISOString().slice(0, 10);
+      const file = `Daily/${today}.md`;
+      if (!vault.listNotes().some((note) => note.path === file)) {
+        vault.write(file, `# ${today}\n\n`);
+      }
+      app.showNotice(`Daily note ready: ${file}`);
+    },
+  });
+};
+```
+
+Available sandbox APIs:
+
+- `app.getVaultPath()` – absolute path to the active vault
+- `app.registerCommand({ id, name, callback })` – register a command shown in the sidebar
+- `app.showNotice(message)` – push a toast notification to the renderer
+- `vault.listNotes()` – array of `{ path, title, modified }`
+- `vault.read(relativePath)` / `vault.write(relativePath, content)`
+- `vault.rename(oldPath, newPath)` / `vault.delete(relativePath)`
+
+Reload plugins via **Reload plugins** in the sidebar. All plugin execution happens locally and shares the renderer’s event bus only through the exposed APIs.
+
+## Local-first guarantees
+
+- Vault content is read and written using Node.js file system APIs. No network calls are made.
+- Markdown rendering, search, tag extraction, and graph generation are implemented with local algorithms.
+- Plugins are executed via Node.js `vm` contexts and have no implicit network access beyond what the plugin author writes.
+- The renderer loads only bundled JavaScript and CSS assets; there are no CDN or remote font dependencies.
+
+## Contributing
+
+1. Fork and clone the repository.
+2. Create a feature branch.
+3. Run `npm run format` before committing.
+4. Ensure `npm start` launches successfully.
+5. Submit a pull request describing the change.
+
+All contributions should preserve the local-first behavior and avoid introducing network requirements.
