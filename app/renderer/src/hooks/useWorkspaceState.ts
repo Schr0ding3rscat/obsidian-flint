@@ -32,6 +32,46 @@ function normalizePane(pane: PaneState | undefined, index: number, fallbackFile:
   };
 }
 
+function isWorkspaceEqual(a: WorkspaceState, b: WorkspaceState): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (a.activeFile !== b.activeFile) {
+    return false;
+  }
+
+  if (!areArraysEqual(a.openFiles, b.openFiles)) {
+    return false;
+  }
+
+  if (!areArraysEqual(a.collapsedFolders, b.collapsedFolders)) {
+    return false;
+  }
+
+  if (a.openPanes.length !== b.openPanes.length) {
+    return false;
+  }
+
+  for (let index = 0; index < a.openPanes.length; index++) {
+    const paneA = a.openPanes[index];
+    const paneB = b.openPanes[index];
+    if (paneA.id !== paneB.id || paneA.type !== paneB.type || paneA.file !== paneB.file) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function areArraysEqual(arrA: string[], arrB: string[]): boolean {
+  if (arrA.length !== arrB.length) {
+    return false;
+  }
+
+  return arrA.every((value, index) => value === arrB[index]);
+}
+
 export function useWorkspaceState(): UseWorkspaceStateResult {
   const [workspace, setWorkspace] = useState<WorkspaceState>(DEFAULT_WORKSPACE_STATE);
   const [hydrated, setHydrated] = useState(false);
@@ -79,7 +119,10 @@ export function useWorkspaceState(): UseWorkspaceStateResult {
     }
 
     return api.onStateUpdated((state) => {
-      setWorkspace((current) => normalize({ ...current, ...state }));
+      setWorkspace((current) => {
+        const next = normalize({ ...current, ...state });
+        return isWorkspaceEqual(current, next) ? current : next;
+      });
     });
   }, []);
 
