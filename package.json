@@ -1,8 +1,22 @@
 {
-  "name": "obsidian-community-releases",
+  "name": "flint2-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Flint2 – privacy-first Markdown workspace monorepo",
+  "license": "GPL-3.0-or-later",
   "scripts": {
-    "format": "prettier --write \"**/community*.json\""
+    "format": "prettier --write \"**/*.{json,md,ts,tsx,css}\"",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter @flint2/web dev"
   },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.12.3",
   "devDependencies": {
     "prettier": "3.5.3"
   }
