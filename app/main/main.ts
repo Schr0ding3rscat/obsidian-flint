@@ -75,12 +75,14 @@ ipcMain.handle("workspace:save", async (_event, state: WorkspaceState): Promise<
 ipcMain.handle("mcp:connect", async (_event, options: McpConnectOptions) => {
   const status = await mcpClient.connect(options);
   const messages = mcpClient.getMessages();
+  broadcastToAll("mcp:history", messages);
   return { status, messages };
 });
 
 ipcMain.handle("mcp:disconnect", async () => {
   const status = mcpClient.disconnect();
   const messages = mcpClient.getMessages();
+  broadcastToAll("mcp:history", messages);
   return { status, messages };
 });
 

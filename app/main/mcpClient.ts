@@ -3,6 +3,7 @@ import WebSocket from "ws";
 import { McpConnectOptions, McpMessage, McpSendPayload, McpStatus } from "../shared/mcp";
 
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+const MAX_MESSAGES = 200;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -29,7 +30,15 @@ export class McpClient extends EventEmitter {
   }
 
   async connect(options: McpConnectOptions): Promise<McpStatus> {
-    const targetUrl = this.normalizeUrl(options.url);
+    let targetUrl: URL;
+
+    try {
+      targetUrl = this.normalizeUrl(options.url);
+    } catch (error) {
+      const message = (error as Error).message;
+      this.setStatus({ state: "error", url: null, lastError: message });
+      throw error;
+    }
 
     if (this.socket) {
       this.disconnect();
@@ -55,6 +64,7 @@ export class McpClient extends EventEmitter {
 
       socket.once("open", () => {
         this.socket = socket;
+        this.messages = [];
         this.setStatus({ state: "connected", url: targetUrl.toString(), lastError: null });
 
         socket.off("error", handleError);
@@ -74,8 +84,7 @@ export class McpClient extends EventEmitter {
             timestamp: Date.now(),
             payload
           };
-          this.messages.push(entry);
-          this.emit("message", entry);
+          this.recordMessage(entry);
         });
 
         if (options.metadata && isRecord(options.metadata) && Object.keys(options.metadata).length > 0) {
@@ -114,10 +123,8 @@ export class McpClient extends EventEmitter {
       timestamp: Date.now(),
       payload
     };
-    this.messages.push(entry);
-    this.emit("message", entry);
 
-    return entry;
+    return this.recordMessage(entry);
   }
 
   private serializePayload(payload: McpSendPayload): string {
@@ -164,6 +171,12 @@ export class McpClient extends EventEmitter {
       lastError: status.lastError ?? null
     };
     this.emit("status", this.getStatus());
+  }
+
+  private recordMessage(entry: McpMessage): McpMessage {
+    this.messages = [...this.messages.slice(-MAX_MESSAGES + 1), entry];
+    this.emit("message", entry);
+    return entry;
   }
 
   private normalizeUrl(input: string): URL {
