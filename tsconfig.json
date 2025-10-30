@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "app/main" },
+    { "path": "app/preload" },
+    { "path": "app/renderer" }
+  ]
+}
