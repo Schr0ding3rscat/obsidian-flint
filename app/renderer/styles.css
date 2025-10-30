@@ -185,6 +185,13 @@ button {
 .main-pane {
   grid-area: main;
   background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-pane__grid {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
@@ -274,6 +281,46 @@ button {
   gap: 12px;
 }
 
+.status-bar__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--background-hover);
+  color: var(--text-muted);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.status-bar__button:hover,
+.status-bar__button:focus-visible {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.status-bar__indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.status-bar__indicator--connected {
+  background: #3ccf4e;
+  box-shadow: 0 0 0 2px rgba(60, 207, 78, 0.25);
+}
+
+.status-bar__indicator--connecting {
+  background: #ffc857;
+  box-shadow: 0 0 0 2px rgba(255, 200, 87, 0.25);
+}
+
+.status-bar__indicator--error {
+  background: #f56262;
+  box-shadow: 0 0 0 2px rgba(245, 98, 98, 0.25);
+}
+
 .badge {
   padding: 2px 6px;
   border-radius: 4px;
@@ -312,4 +359,177 @@ button {
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.mcp-console {
+  border-top: 1px solid var(--border-subtle);
+  background: var(--background-secondary);
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  max-height: 340px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.mcp-console__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  grid-column: 1 / -1;
+}
+
+.mcp-console__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mcp-console__status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #9ca3af;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.mcp-console__status--connected .mcp-console__status-indicator {
+  background: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+}
+
+.mcp-console__status--connecting .mcp-console__status-indicator {
+  background: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+}
+
+.mcp-console__status--error .mcp-console__status-indicator {
+  background: #f87171;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2);
+}
+
+.mcp-console__status-url {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.mcp-console__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mcp-console__form {
+  display: grid;
+  gap: 8px;
+}
+
+.mcp-console__label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mcp-console__input,
+.mcp-console__textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font: inherit;
+  resize: vertical;
+}
+
+.mcp-console__textarea {
+  min-height: 80px;
+}
+
+.mcp-console__button {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--background-hover);
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.mcp-console__button--primary {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: transparent;
+}
+
+.mcp-console__button:hover,
+.mcp-console__button:focus-visible {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.mcp-console__button--primary:hover,
+.mcp-console__button--primary:focus-visible {
+  background: var(--accent-strong);
+  color: var(--text-inverse);
+}
+
+.mcp-console__error {
+  grid-column: 1 / -1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(245, 98, 98, 0.12);
+  color: #f87171;
+  font-size: 12px;
+}
+
+.mcp-console__log {
+  grid-column: 1 / -1;
+  background: var(--background-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.mcp-console__empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.mcp-console__entry {
+  border-left: 3px solid var(--border-subtle);
+  padding-left: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.mcp-console__entry--outbound {
+  border-color: var(--accent);
+}
+
+.mcp-console__entry header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mcp-console__entry pre {
+  margin: 0;
+  font-family: "Fira Code", "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
 }

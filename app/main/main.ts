@@ -2,8 +2,17 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import { WorkspaceStore } from "./workspaceStore";
 import { WorkspaceState } from "../shared/workspace";
+import { McpClient } from "./mcpClient";
+import { McpConnectOptions, McpSendPayload } from "../shared/mcp";
 
 const workspaceStore = new WorkspaceStore();
+const mcpClient = new McpClient();
+
+function broadcastToAll(channel: string, payload: unknown): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send(channel, payload);
+  }
+}
 
 async function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -25,6 +34,13 @@ async function createWindow() {
   } else {
     await mainWindow.loadFile(path.join(__dirname, "../../dist/renderer/index.html"));
   }
+
+  const initialStatus = mcpClient.getStatus();
+  const initialMessages = mcpClient.getMessages();
+  mainWindow.webContents.once("did-finish-load", () => {
+    mainWindow.webContents.send("mcp:status", initialStatus);
+    mainWindow.webContents.send("mcp:history", initialMessages);
+  });
 }
 
 app.whenReady().then(async () => {
@@ -54,4 +70,33 @@ ipcMain.handle("workspace:save", async (_event, state: WorkspaceState): Promise<
     window.webContents.send("workspace:updated", savedState);
   }
   return savedState;
+});
+
+ipcMain.handle("mcp:connect", async (_event, options: McpConnectOptions) => {
+  const status = await mcpClient.connect(options);
+  const messages = mcpClient.getMessages();
+  return { status, messages };
+});
+
+ipcMain.handle("mcp:disconnect", async () => {
+  const status = mcpClient.disconnect();
+  const messages = mcpClient.getMessages();
+  return { status, messages };
+});
+
+ipcMain.handle("mcp:status", async () => {
+  return { status: mcpClient.getStatus(), messages: mcpClient.getMessages() };
+});
+
+ipcMain.handle("mcp:send", async (_event, payload: McpSendPayload) => {
+  const message = mcpClient.send(payload);
+  return message;
+});
+
+mcpClient.on("status", (status) => {
+  broadcastToAll("mcp:status", status);
+});
+
+mcpClient.on("message", (message) => {
+  broadcastToAll("mcp:message", message);
 });

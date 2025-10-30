@@ -2,7 +2,8 @@ const TOOLS = [
   { id: "files", icon: "📁", label: "Files" },
   { id: "search", icon: "🔍", label: "Search" },
   { id: "graph", icon: "🕸️", label: "Graph" },
-  { id: "calendar", icon: "📆", label: "Daily notes" }
+  { id: "calendar", icon: "📆", label: "Daily notes" },
+  { id: "mcp", icon: "🤖", label: "Local AI" }
 ] as const;
 
 interface LeftRibbonProps {

@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWorkspaceState } from "./hooks/useWorkspaceState";
+import { useMcpConnection } from "./hooks/useMcpConnection";
 import { DEFAULT_WORKSPACE_STATE } from "@shared/workspace";
 import LeftRibbon from "./components/LeftRibbon";
 import FileExplorer from "./components/FileExplorer";
 import EditorPane from "./components/EditorPane";
 import PreviewPane from "./components/PreviewPane";
 import StatusBar from "./components/StatusBar";
+import McpConsole from "./components/McpConsole";
 import {
   SAMPLE_FILE_TREE,
   DEFAULT_FILE_CONTENT,
@@ -29,6 +31,14 @@ export default function App(): JSX.Element {
   const [files, setFiles] = useState<Record<string, string>>(() => ({ ...DEFAULT_FILE_CONTENT }));
   const [activeTool, setActiveTool] = useState("files");
   const [theme, setTheme] = useState<"light" | "dark">(DEFAULT_THEME);
+  const {
+    status: mcpStatus,
+    messages: mcpMessages,
+    pending: mcpPending,
+    connect: connectMcp,
+    disconnect: disconnectMcp,
+    send: sendMcp
+  } = useMcpConnection();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -96,6 +106,17 @@ export default function App(): JSX.Element {
     [activeContent.length, openPanes.length, activeNode?.name]
   );
 
+  const handleOpenMcp = useCallback(() => {
+    setActiveTool((current) => (current === "mcp" ? "files" : "mcp"));
+  }, []);
+
+  const handleSendMcp = useCallback(
+    async (payload: unknown) => {
+      await sendMcp(payload);
+    },
+    [sendMcp]
+  );
+
   if (!hydrated) {
     return (
       <div className="app-shell">
@@ -108,6 +129,7 @@ export default function App(): JSX.Element {
           theme={theme}
           onToggleTheme={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
           info={{ characters: 0, openCount: 0, activeFileName: "" }}
+          mcp={{ state: mcpStatus.state, busy: mcpPending, onToggle: handleOpenMcp }}
         />
       </div>
     );
@@ -123,18 +145,31 @@ export default function App(): JSX.Element {
         onSelect={handleSelectFile}
         onToggleFolder={handleToggleFolder}
       />
-      <div className="main-pane">
-        {openPanes.some((pane) => pane.type === "editor") && (
-          <EditorPane value={activeContent} fileName={activeNode?.name ?? "Untitled"} onChange={handleContentChange} theme={theme} />
-        )}
-        {openPanes.some((pane) => pane.type === "preview") && (
-          <PreviewPane value={activeContent} fileName={activeNode?.name ?? "Untitled"} />
+      <div className={`main-pane${activeTool === "mcp" ? " main-pane--show-console" : ""}`}>
+        <div className="main-pane__grid">
+          {openPanes.some((pane) => pane.type === "editor") && (
+            <EditorPane value={activeContent} fileName={activeNode?.name ?? "Untitled"} onChange={handleContentChange} theme={theme} />
+          )}
+          {openPanes.some((pane) => pane.type === "preview") && (
+            <PreviewPane value={activeContent} fileName={activeNode?.name ?? "Untitled"} />
+          )}
+        </div>
+        {activeTool === "mcp" && (
+          <McpConsole
+            status={mcpStatus}
+            messages={mcpMessages}
+            pending={mcpPending}
+            onConnect={connectMcp}
+            onDisconnect={disconnectMcp}
+            onSend={handleSendMcp}
+          />
         )}
       </div>
       <StatusBar
         theme={theme}
         onToggleTheme={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
         info={status}
+        mcp={{ state: mcpStatus.state, busy: mcpPending, onToggle: handleOpenMcp }}
       />
     </div>
   );
